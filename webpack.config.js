@@ -93,7 +93,7 @@ module.exports = [
                 // FPS counter
                 'stats.js/build/stats.min.js',
                 // Scratch Blocks
-                'bb-blocks/dist/vertical.js',
+                '@bbge/blocks/dist/vertical.js',
                 // Audio
                 'scratch-audio',
                 // Storage
@@ -122,7 +122,7 @@ module.exports = [
                     loader: 'script-loader'
                 },
                 {
-                    test: require.resolve('bb-blocks/dist/vertical.js'),
+                    test: require.resolve('@bbge/blocks/dist/vertical.js'),
                     loader: 'expose-loader?Blockly'
                 },
                 {
@@ -144,7 +144,7 @@ module.exports = [
         },
         plugins: base.plugins.concat([
             new CopyWebpackPlugin([{
-                from: 'node_modules/bb-blocks/media',
+                from: 'node_modules/@bbge/blocks/media',
                 to: 'media'
             }, {
                 from: 'node_modules/scratch-storage/dist/web'
