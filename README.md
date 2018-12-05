@@ -68,15 +68,3 @@ npm test
 ```bash
 npm run coverage
 ```
-
-## Publishing to GitHub Pages
-```bash
-npm run deploy
-```
-
-This will push the currently built playground to the gh-pages branch of the
-currently tracked remote.  If you would like to change where to push to, add
-a repo url argument:
-```bash
-npm run deploy -- -r <your repo url>
-```
