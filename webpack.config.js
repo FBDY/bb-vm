@@ -44,8 +44,8 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'web',
         entry: {
-            'scratch-vm': './src/index.js',
-            'scratch-vm.min': './src/index.js'
+            'bb-vm': './src/index.js',
+            'bb-vm.min': './src/index.js'
         },
         output: {
             libraryTarget: 'umd',
@@ -64,7 +64,7 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'node',
         entry: {
-            'scratch-vm': './src/index.js'
+            'bb-vm': './src/index.js'
         },
         output: {
             libraryTarget: 'commonjs2',
@@ -88,12 +88,12 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'web',
         entry: {
-            'scratch-vm': './src/index.js',
+            'bb-vm': './src/index.js',
             'vendor': [
                 // FPS counter
                 'stats.js/build/stats.min.js',
                 // Scratch Blocks
-                'scratch-blocks/dist/vertical.js',
+                'bb-blocks/dist/vertical.js',
                 // Audio
                 'scratch-audio',
                 // Storage
@@ -122,7 +122,7 @@ module.exports = [
                     loader: 'script-loader'
                 },
                 {
-                    test: require.resolve('scratch-blocks/dist/vertical.js'),
+                    test: require.resolve('bb-blocks/dist/vertical.js'),
                     loader: 'expose-loader?Blockly'
                 },
                 {
@@ -144,7 +144,7 @@ module.exports = [
         },
         plugins: base.plugins.concat([
             new CopyWebpackPlugin([{
-                from: 'node_modules/scratch-blocks/media',
+                from: 'node_modules/bb-blocks/media',
                 to: 'media'
             }, {
                 from: 'node_modules/scratch-storage/dist/web'
