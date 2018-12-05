@@ -7,9 +7,9 @@ This requires you to have Git and Node.js installed.
 
 To install as a dependency for your own application:
 ```bash
-npm install bb-vm
+npm install @bbge/vm
 ```
-To set up a development environment to edit bb-vm yourself:
+To set up a development environment to edit @bbge/vm yourself:
 ```bash
 git clone https://github.com/FBDY/bb-vm.git
 cd bb-vm

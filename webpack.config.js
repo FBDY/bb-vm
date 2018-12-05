@@ -44,8 +44,8 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'web',
         entry: {
-            'bb-vm': './src/index.js',
-            'bb-vm.min': './src/index.js'
+            '@bbge/vm': './src/index.js',
+            '@bbge/vm.min': './src/index.js'
         },
         output: {
             libraryTarget: 'umd',
@@ -64,7 +64,7 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'node',
         entry: {
-            'bb-vm': './src/index.js'
+            '@bbge/vm': './src/index.js'
         },
         output: {
             libraryTarget: 'commonjs2',
@@ -88,7 +88,7 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'web',
         entry: {
-            'bb-vm': './src/index.js',
+            '@bbge/vm': './src/index.js',
             'vendor': [
                 // FPS counter
                 'stats.js/build/stats.min.js',

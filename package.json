@@ -1,5 +1,5 @@
 {
-  "name": "bb-vm",
+  "name": "@bbge/vm",
   "version": "0.2.0",
   "description": "Virtual Machine for BBGE",
   "author": "Massachusetts Institute of Technology",
