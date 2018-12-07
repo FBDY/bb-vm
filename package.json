@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git@github.com:FBDY/bb-vm.git"
   },
-  "main": "./dist/node/scratch-vm.js",
+  "main": "./dist/node/@bbge/vm.js",
   "browser": "./src/index.js",
   "scripts": {
     "build": "npm run docs && webpack --progress --colors --bail",
