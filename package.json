@@ -1,6 +1,6 @@
 {
   "name": "@bbge/vm",
-  "version": "0.2.0",
+  "version": "0.0.1-prerelease.20181204181643",
   "description": "Virtual Machine for BBGE",
   "author": "Massachusetts Institute of Technology",
   "license": "BSD-3-Clause",
@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git@github.com:FBDY/bb-vm.git"
   },
-  "main": "./dist/node/scratch-vm.js",
+  "main": "./dist/node/@bbge/vm.js",
   "browser": "./src/index.js",
   "scripts": {
     "build": "npm run docs && webpack --progress --colors --bail",
