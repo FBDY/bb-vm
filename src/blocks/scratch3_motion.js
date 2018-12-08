@@ -17,6 +17,7 @@ class Scratch3MotionBlocks {
      */
     getPrimitives () {
         return {
+            motion_gather_clones: this.gatherClones,
             motion_movesteps: this.moveSteps,
             motion_gotoxy: this.goToXY,
             motion_goto: this.goTo,
@@ -59,6 +60,16 @@ class Scratch3MotionBlocks {
                 getId: targetId => `${targetId}_direction`
             }
         };
+    }
+
+    gatherClones (args, util) {
+        const target = util.target;
+        const sprite = target.sprite;
+        const clones = sprite.clones;
+        const len = clones.length;
+        for (var i = 0; i < len; i++) {
+            clones[i].setXY(target.x, target.y);
+        }
     }
 
     moveSteps (args, util) {
