@@ -1,6 +1,6 @@
 ## bb-vm
 
-[![Build Status](https://travis-ci.org/FBDY/bb-vm.svg?branch=develop)](https://travis-ci.org/FBDY/bb-vm)
+[![Build Status](https://travis-ci.org/FBDY/bb-vm.svg?branch=develop)](https://travis-ci.org/FBDY/bb-vm) [![Greenkeeper badge](https://badges.greenkeeper.io/FBDY/bb-vm.svg)](https://greenkeeper.io/)
 
 ## Installation
 This requires you to have Git and Node.js installed.
