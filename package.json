@@ -1,15 +1,15 @@
 {
-  "name": "scratch-vm",
+  "name": "@bbge/vm",
   "version": "0.2.0",
-  "description": "Virtual Machine for Scratch 3.0",
+  "description": "Virtual Machine for BBGE",
   "author": "Massachusetts Institute of Technology",
   "license": "BSD-3-Clause",
-  "homepage": "https://github.com/LLK/scratch-vm#readme",
+  "homepage": "https://github.com/FBDY/bb-vm",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/LLK/scratch-vm.git"
+    "url": "git@github.com:FBDY/bb-vm.git"
   },
-  "main": "./dist/node/scratch-vm.js",
+  "main": "./dist/node/@bbge/vm.js",
   "browser": "./src/index.js",
   "scripts": {
     "build": "npm run docs && webpack --progress --colors --bail",
@@ -69,7 +69,7 @@
     "lodash.defaultsdeep": "4.6.0",
     "pngjs": "^3.3.2",
     "scratch-audio": "latest",
-    "scratch-blocks": "latest",
+    "@bbge/blocks": "latest",
     "scratch-l10n": "^3.1.20181129221712",
     "scratch-render": "latest",
     "scratch-storage": "^1.1.0",
