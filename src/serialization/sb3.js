@@ -200,15 +200,13 @@ const serializeBlock = function (block) {
     obj.parent = block.parent;
     obj.inputs = serializeInputs(block.inputs);
     obj.fields = serializeFields(block.fields);
-    obj.topLevel = block.topLevel ? block.topLevel : false;
     obj.shadow = block.shadow;
     if (block.topLevel) {
-        if (block.x) {
-            obj.x = Math.round(block.x);
-        }
-        if (block.y) {
-            obj.y = Math.round(block.y);
-        }
+        obj.topLevel = true;
+        obj.x = block.x ? Math.round(block.x) : 0;
+        obj.y = block.y ? Math.round(block.y) : 0;
+    } else {
+        obj.topLevel = false;
     }
     if (block.mutation) {
         obj.mutation = block.mutation;
@@ -326,7 +324,7 @@ const serializeBlocks = function (blocks) {
         // a shadow block, and there are no blocks that reference it, otherwise
         // they would have been compressed in the last pass)
         if (Array.isArray(serializedBlock) &&
-            [VAR_PRIMITIVE, LIST_PRIMITIVE].indexOf(serializedBlock) < 0) {
+            [VAR_PRIMITIVE, LIST_PRIMITIVE].indexOf(serializedBlock[0]) < 0) {
             log.warn(`Found an unexpected top level primitive with block ID: ${
                 blockID}; deleting it from serialized blocks.`);
             delete obj[blockID];
@@ -803,7 +801,7 @@ const deserializeBlocks = function (blocks) {
             // this is one of the primitives
             // delete the old entry in object.blocks and replace it w/the
             // deserialized object
-            delete block[blockId];
+            delete blocks[blockId];
             deserializeInputDesc(block, null, false, blocks);
             continue;
         }
@@ -1026,6 +1024,9 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
         // so that we can correctly order sprites in the target pane.
         // This will be deleted after we are done parsing and ordering the targets list.
         target.targetPaneOrder = object.targetPaneOrder;
+    }
+    if (object.hasOwnProperty('draggable')) {
+        target.draggable = object.draggable;
     }
     Promise.all(costumePromises).then(costumes => {
         sprite.costumes = costumes;
