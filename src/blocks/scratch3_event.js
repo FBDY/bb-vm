@@ -25,6 +25,7 @@ class Scratch3EventBlocks {
     getPrimitives () {
         return {
             event_whentouchingobject: this.touchingObject,
+            event_sendmsg: this.sendMsg,
             event_broadcast: this.broadcast,
             event_broadcastandwait: this.broadcastAndWait,
             event_whengreaterthan: this.hatGreaterThanPredicate
@@ -76,6 +77,17 @@ class Scratch3EventBlocks {
             return this.runtime.audioEngine && this.runtime.audioEngine.getLoudness() > value;
         }
         return false;
+    }
+
+    sendMsg (args, util) {
+        const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
+            args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
+        if (broadcastVar) {
+            const broadcastOption = broadcastVar.name;
+            util.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: broadcastOption
+            });
+        }
     }
 
     broadcast (args, util) {
