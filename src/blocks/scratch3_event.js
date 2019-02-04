@@ -27,7 +27,8 @@ class Scratch3EventBlocks {
             event_whentouchingobject: this.touchingObject,
             event_broadcast: this.broadcast,
             event_broadcastandwait: this.broadcastAndWait,
-            event_whengreaterthan: this.hatGreaterThanPredicate
+            event_whengreaterthan: this.hatGreaterThanPredicate,
+            event_sendmsg: this.sendMsg
         };
     }
 
@@ -129,6 +130,9 @@ class Scratch3EventBlocks {
                 }
             }
         }
+    }
+
+    sendMsg (args, util) {
     }
 }
 
