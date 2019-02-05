@@ -133,6 +133,26 @@ class Scratch3EventBlocks {
     }
 
     sendMsg (args, util) {
+        const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
+            args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
+        if (broadcastVar) {
+            const broadcastOption = broadcastVar.name;
+
+            // Find message target
+            let msgTarget;
+            if (args.SENDMSG_TARGET === '_myself_') {
+              msgTarget = util.target;
+            } else {
+              msgTarget = this.runtime.getSpriteTargetByName(args.SENDMSG_TARGET);
+            }
+
+            // If message target is not found, return
+            if (!msgTarget) return;
+
+            util.startHats('event_whenbroadcastreceived', {
+                BROADCAST_OPTION: broadcastOption
+            }, msgTarget);
+        }
     }
 }
 
