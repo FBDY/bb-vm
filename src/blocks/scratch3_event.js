@@ -141,9 +141,9 @@ class Scratch3EventBlocks {
             // Find message target
             let msgTarget;
             if (args.SENDMSG_TARGET === '_myself_') {
-              msgTarget = util.target;
+                msgTarget = util.target;
             } else {
-              msgTarget = this.runtime.getSpriteTargetByName(args.SENDMSG_TARGET);
+                msgTarget = this.runtime.getSpriteTargetByName(args.SENDMSG_TARGET);
             }
 
             // If message target is not found, return
