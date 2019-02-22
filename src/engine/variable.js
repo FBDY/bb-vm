@@ -27,6 +27,8 @@ class Variable {
             this.value = [];
             break;
         case Variable.BROADCAST_MESSAGE_TYPE:
+        // fall through
+        case Variable.CLONE_NAME_TYPE:
             this.value = this.name;
             break;
         default:
@@ -64,6 +66,14 @@ class Variable {
      */
     static get BROADCAST_MESSAGE_TYPE () {
         return 'broadcast_msg';
+    }
+
+    /**
+     * Type for named sprite clones.
+     * @const {string}
+     */
+    static get CLONE_NAME_TYPE () {
+        return 'clone_name';
     }
 }
 
