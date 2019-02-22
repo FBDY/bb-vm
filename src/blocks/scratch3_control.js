@@ -44,6 +44,9 @@ class Scratch3ControlBlocks {
         return {
             control_start_as_clone: {
                 restartExistingThreads: false
+            },
+            control_start_as_named_clone: {
+                restartExistingThreads: false
             }
         };
     }
