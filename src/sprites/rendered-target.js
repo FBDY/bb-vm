@@ -66,6 +66,13 @@ class RenderedTarget extends Target {
         this.isOriginal = true;
 
         /**
+         * If this target is a named clone, this is its name.
+         * If not, it's just null.
+         * @type {string}
+         */
+        this.cloneName = null;
+
+        /**
          * Whether this rendered target represents the Scratch stage.
          * @type {boolean}
          */
@@ -175,6 +182,9 @@ class RenderedTarget extends Target {
         if (!this.isOriginal) {
             this.runtime.startHats(
                 'control_start_as_clone', null, this
+            );
+            this.runtime.startHats(
+                'control_start_as_named_clone', null, this
             );
         }
     }
