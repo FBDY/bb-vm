@@ -67,10 +67,11 @@ class RenderedTarget extends Target {
 
         /**
          * If this target is a named clone, this is its name.
-         * If not, it's just null.
+         * For unnamed clones, this is...
+         * XXX: This is a hack. Find a better way.
          * @type {string}
          */
-        this.cloneName = null;
+        this.cloneName = 'nobody_should_name_their_clones_like_this_anyway';
 
         /**
          * Whether this rendered target represents the Scratch stage.
@@ -184,8 +185,9 @@ class RenderedTarget extends Target {
                 'control_start_as_clone', null, this
             );
             this.runtime.startHats(
-                'control_start_as_named_clone', null, this
-            );
+                'control_start_as_named_clone', {
+                    CLONE_NAME: this.cloneName
+                }, this);
         }
     }
 
