@@ -186,7 +186,7 @@ class RenderedTarget extends Target {
             );
             this.runtime.startHats(
                 'control_start_as_named_clone', {
-                    CLONE_NAME: this.cloneName
+                    CLONE_NAME_OPTION: this.cloneName
                 }, this);
         }
     }
