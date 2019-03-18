@@ -1331,6 +1331,34 @@ class VirtualMachine extends EventEmitter {
             const id = messageIds[i];
             delete this.runtime.getTargetForStage().variables[id];
         }
+        // Create a list of clone name Ids according to the stage variables
+        let cloneIds = [];
+        for (const varId in stageVariables) {
+            if (stageVariables[varId].type === Variable.CLONE_NAME_TYPE) {
+                cloneIds.push(varId);
+            }
+        }
+        // Go through all blocks on all targets, removing referenced
+        // clone name ids from the list.
+        for (let i = 0; i < this.runtime.targets.length; i++) {
+            const currTarget = this.runtime.targets[i];
+            const currBlocks = currTarget.blocks._blocks;
+            for (const blockId in currBlocks) {
+                if (currBlocks[blockId].fields.CLONE_NAME_OPTION) {
+                    const id = currBlocks[blockId].fields.CLONE_NAME_OPTION.id;
+                    const index = cloneIds.indexOf(id);
+                    if (index !== -1) {
+                        cloneIds = cloneIds.slice(0, index)
+                            .concat(cloneIds.slice(index + 1));
+                    }
+                }
+            }
+        }
+        // Anything left in cloneIds is not referenced by a block, so delete it.
+        for (let i = 0; i < cloneIds.length; i++) {
+            const id = cloneIds[i];
+            delete this.runtime.getTargetForStage().variables[id];
+        }
         const globalVarMap = Object.assign({}, this.runtime.getTargetForStage().variables);
         const localVarMap = this.editingTarget.isStage ?
             Object.create(null) :
