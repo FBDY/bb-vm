@@ -843,6 +843,9 @@ class Blocks {
             } else if (optIncludeBroadcast && blocks[blockId].fields.BROADCAST_OPTION) {
                 varOrListField = blocks[blockId].fields.BROADCAST_OPTION;
                 varType = Variable.BROADCAST_MESSAGE_TYPE;
+            } else if (blocks[blockId].fields.CLONE_NAME_OPTION) {
+                varOrListField = blocks[blockId].fields.CLONE_NAME_OPTION;
+                varType = Variable.CLONE_NAME_TYPE;
             }
             if (varOrListField) {
                 const currVarId = varOrListField.id;
