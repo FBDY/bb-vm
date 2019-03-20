@@ -1550,6 +1550,10 @@ class Runtime extends EventEmitter {
      */
     startHats (requestedHatOpcode,
         optMatchFields, optTarget) {
+        if (optMatchFields) {
+            console.log("In startHats() with truthy optMatchFields:");
+            console.log(optMatchFields);
+        }
         if (!this._hats.hasOwnProperty(requestedHatOpcode)) {
             // No known hat with this opcode.
             return;

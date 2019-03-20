@@ -176,6 +176,8 @@ class RenderedTarget extends Target {
      * @param {boolean} layerGroup The layer group this drawable should be added to
      */
     initDrawable (layerGroup) {
+        console.log("initDrawable()");
+        console.log(this.cloneName);
         if (this.renderer) {
             this.drawableID = this.renderer.createDrawable(layerGroup);
         }

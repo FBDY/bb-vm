@@ -152,6 +152,8 @@ class Scratch3ControlBlocks {
     }
 
     createClone (args, util) {
+        console.log("createClone() args:");
+        console.log(args);
         // Cast argument to string
         args.CLONE_OPTION = Cast.toString(args.CLONE_OPTION);
 
