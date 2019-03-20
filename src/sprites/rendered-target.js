@@ -67,11 +67,10 @@ class RenderedTarget extends Target {
 
         /**
          * If this target is a named clone, this is its name.
-         * For unnamed clones, this is...
-         * XXX: This is a hack. Find a better way.
+         * For unnamed clones, this is null.
          * @type {string}
          */
-        this.cloneName = 'nobody_should_name_their_clones_like_this_anyway';
+        this.cloneName = null;
 
         /**
          * Whether this rendered target represents the Scratch stage.
@@ -184,10 +183,13 @@ class RenderedTarget extends Target {
             this.runtime.startHats(
                 'control_start_as_clone', null, this
             );
-            this.runtime.startHats(
-                'control_start_as_named_clone', {
-                    CLONE_NAME_OPTION: this.cloneName
-                }, this);
+            // If we're a named clone, start the named clone hats
+            if (this.cloneName) {
+                this.runtime.startHats(
+                    'control_start_as_named_clone', {
+                        CLONE_NAME_OPTION: this.cloneName }, this
+                );
+            }
         }
     }
 
@@ -1011,9 +1013,10 @@ class RenderedTarget extends Target {
     /**
      * Make a clone, copying any run-time properties.
      * If we've hit the global clone limit, returns null.
+     * @param {string} cloneName Name of the clone, null if the clone is anonymous.
      * @return {RenderedTarget} New clone.
      */
-    makeClone () {
+    makeClone (cloneName) {
         if (!this.runtime.clonesAvailable() || this.isStage) {
             return null; // Hit max clone limit, or this is the stage.
         }
@@ -1030,6 +1033,7 @@ class RenderedTarget extends Target {
         newClone.rotationStyle = this.rotationStyle;
         newClone.effects = Clone.simple(this.effects);
         newClone.variables = this.duplicateVariables();
+        newClone.cloneName = cloneName;
         newClone._edgeActivatedHatValues = Clone.simple(this._edgeActivatedHatValues);
         newClone.initDrawable(StageLayering.SPRITE_LAYER);
         newClone.updateAllDrawableProperties();

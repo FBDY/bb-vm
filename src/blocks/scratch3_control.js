@@ -166,42 +166,20 @@ class Scratch3ControlBlocks {
         // If clone target is not found, return
         if (!cloneTarget) return;
 
+        // Set clone name
+        let cloneName = null;
+        if (args.CLONE_NAME) {
+            cloneName = args.CLONE_NAME;
+        }
+
         // Create clone
-        const newClone = cloneTarget.makeClone();
+        const newClone = cloneTarget.makeClone(cloneName);
         if (newClone) {
             this.runtime.addTarget(newClone);
 
             // Place behind the original target.
             newClone.goBehindOther(cloneTarget);
         }
-    }
-
-    createNamedClone (args, util) {
-        // Cast arguments to string
-        args.CLONE_OPTION = Cast.toString(args.CLONE_OPTION);
-        args.CLONE_NAME = Cast.toString(args.CLONE_NAME);
-
-        // Set clone target
-        let cloneTarget;
-        if (args.CLONE_OPTION === '_myself_') {
-            cloneTarget = util.target;
-        } else {
-            cloneTarget = this.runtime.getSpriteTargetByName(args.CLONE_OPTION);
-        }
-
-        // If clone target is not found, return
-        if (!cloneTarget) return;
-
-        // Create clone
-        const newClone = cloneTarget.makeClone();
-        if (newClone) {
-            this.runtime.addTarget(newClone);
-
-            // Place behind the original target.
-            newClone.goBehindOther(cloneTarget);
-        }
-
-        newClone.cloneName = args.CLONE_NAME;
     }
 
     deleteClone (args, util) {
