@@ -186,8 +186,8 @@ class RenderedTarget extends Target {
             // If we're a named clone, start the named clone hats
             if (this.cloneName) {
                 this.runtime.startHats(
-                    'control_start_as_named_clone', {
-                        CLONE_NAME_OPTION: this.cloneName }, this
+                    'control_start_as_named_clone',
+                    {CLONE_NAME_OPTION: this.cloneName}, this
                 );
             }
         }
