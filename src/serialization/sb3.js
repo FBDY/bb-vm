@@ -79,6 +79,8 @@ const BROADCAST_PRIMITIVE = 11;
 const VAR_PRIMITIVE = 12;
 // data_listcontents
 const LIST_PRIMITIVE = 13;
+// control_clone_name_menu
+const CLONE_NAME_PRIMITIVE = 14;
 
 // Map block opcodes to the above primitives and the name of the field we can use
 // to find the value of the field
@@ -92,7 +94,8 @@ const primitiveOpcodeInfoMap = {
     text: [TEXT_PRIMITIVE, 'TEXT'],
     event_broadcast_menu: [BROADCAST_PRIMITIVE, 'BROADCAST_OPTION'],
     data_variable: [VAR_PRIMITIVE, 'VARIABLE'],
-    data_listcontents: [LIST_PRIMITIVE, 'LIST']
+    data_listcontents: [LIST_PRIMITIVE, 'LIST'],
+    control_clone_name_menu: [CLONE_NAME_PRIMITIVE, 'CLONE_NAME_OPTION']
 };
 
 /**
@@ -110,7 +113,7 @@ const serializePrimitiveBlock = function (block) {
         const fieldName = primitiveInfo[1];
         const field = block.fields[fieldName];
         const primitiveDesc = [primitiveConstant, field.value];
-        if (block.opcode === 'event_broadcast_menu') {
+        if (block.opcode === 'event_broadcast_menu' || block.opcode === 'control_clone_name_menu') {
             primitiveDesc.push(field.id);
         } else if (block.opcode === 'data_variable' || block.opcode === 'data_listcontents') {
             primitiveDesc.push(field.id);
@@ -392,6 +395,7 @@ const serializeVariables = function (variables) {
     obj.variables = Object.create(null);
     obj.lists = Object.create(null);
     obj.broadcasts = Object.create(null);
+    obj.clones = Object.create(null);
     for (const varId in variables) {
         const v = variables[varId];
         if (v.type === Variable.BROADCAST_MESSAGE_TYPE) {
@@ -401,6 +405,9 @@ const serializeVariables = function (variables) {
         if (v.type === Variable.LIST_TYPE) {
             obj.lists[varId] = [v.name, v.value];
             continue;
+        }
+        if (v.type === Variable.CLONE_NAME_TYPE) {
+            obj.clones[varId] = v.value; // name and value is the same for clone names
         }
 
         // otherwise should be a scalar type
@@ -447,6 +454,7 @@ const serializeTarget = function (target, extensions) {
     obj.variables = vars.variables;
     obj.lists = vars.lists;
     obj.broadcasts = vars.broadcasts;
+    obj.clones = vars.clones;
     [obj.blocks, targetExtensions] = serializeBlocks(target.blocks);
     obj.comments = serializeComments(target.comments);
 
@@ -712,6 +720,19 @@ const deserializeInputDesc = function (inputDescOrId, parentId, isShadow, blocks
         }
         break;
     }
+    case CLONE_NAME_PRIMITIVE: {
+        primitiveObj.opcode = 'control_clone_name_menu';
+        primitiveObj.fields = {
+            CLONE_NAME_OPTION: {
+                name: 'CLONE_NAME_OPTION',
+                value: inputDescOrId[1],
+                id: inputDescOrId[2],
+                variableType: Variable.CLONE_NAME_TYPE
+            }
+        };
+        primitiveObj.topLevel = false;
+        break;
+    }
     default: {
         log.error(`Found unknown primitive type during deserialization: ${JSON.stringify(inputDescOrId)}`);
         return null;
@@ -786,6 +807,8 @@ const deserializeFields = function (fields) {
             obj[fieldName].variableType = Variable.SCALAR_TYPE;
         } else if (fieldName === 'LIST') {
             obj[fieldName].variableType = Variable.LIST_TYPE;
+        } else if (fieldName === 'CLONE_NAME_OPTION') {
+            obj[fieldName].variableType = Variable.CLONE_NAME_TYPE;
         }
     }
     return obj;
@@ -981,6 +1004,20 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
             // no need to explicitly set the value, variable constructor
             // sets the value to the same as the name for broadcast msgs
             target.variables[newBroadcast.id] = newBroadcast;
+        }
+    }
+    if (object.hasOwnProperty('clones')) {
+        for (const cloneId in object.clones) {
+            const clone = object.clones[cloneId];
+            const newClone = new Variable(
+                cloneId,
+                clone,
+                Variable.CLONE_NAME_TYPE,
+                false
+            );
+            // no need to explicitly set the value, variable constructor
+            // sets the value to the same as the name for clone names. XXX: does it?
+            target.variables[newClone.id] = newClone;
         }
     }
     if (object.hasOwnProperty('comments')) {
