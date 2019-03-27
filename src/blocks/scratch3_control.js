@@ -32,6 +32,7 @@ class Scratch3ControlBlocks {
             control_if_else: this.ifElse,
             control_stop: this.stop,
             control_create_clone_of: this.createClone,
+            control_create_named_clone_of: this.createClone,
             control_delete_this_clone: this.deleteClone,
             control_get_counter: this.getCounter,
             control_incr_counter: this.incrCounter,
@@ -43,6 +44,9 @@ class Scratch3ControlBlocks {
     getHats () {
         return {
             control_start_as_clone: {
+                restartExistingThreads: false
+            },
+            control_start_as_named_clone: {
                 restartExistingThreads: false
             }
         };
@@ -162,8 +166,14 @@ class Scratch3ControlBlocks {
         // If clone target is not found, return
         if (!cloneTarget) return;
 
+        // Set clone name
+        let cloneName = null;
+        if (args.CLONE_NAME) {
+            cloneName = args.CLONE_NAME;
+        }
+
         // Create clone
-        const newClone = cloneTarget.makeClone();
+        const newClone = cloneTarget.makeClone(cloneName);
         if (newClone) {
             this.runtime.addTarget(newClone);
 

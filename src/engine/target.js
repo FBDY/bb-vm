@@ -259,7 +259,7 @@ class Target extends EventEmitter {
      * dictionary of variables.
      * @param {string} id Id of variable
      * @param {string} name Name of variable.
-     * @param {string} type Type of variable, '', 'broadcast_msg', or 'list'
+     * @param {string} type Type of variable, '', 'broadcast_msg', 'clone_name' or 'list'
      * @param {boolean} isCloud Whether the variable to create has the isCloud flag set.
      * Additional checks are made that the variable can be created as a cloud variable.
      */

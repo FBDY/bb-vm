@@ -571,7 +571,7 @@ class Blocks {
             // Update block value
             if (!block.fields[args.name]) return;
             if (args.name === 'VARIABLE' || args.name === 'LIST' ||
-                args.name === 'BROADCAST_OPTION') {
+                args.name === 'BROADCAST_OPTION' || args.name === 'CLONE_NAME_OPTION') {
                 // Get variable name using the id in args.value.
                 const variable = this.runtime.getEditingTarget().lookupVariableById(args.value);
                 if (variable) {
@@ -843,6 +843,9 @@ class Blocks {
             } else if (optIncludeBroadcast && blocks[blockId].fields.BROADCAST_OPTION) {
                 varOrListField = blocks[blockId].fields.BROADCAST_OPTION;
                 varType = Variable.BROADCAST_MESSAGE_TYPE;
+            } else if (blocks[blockId].fields.CLONE_NAME_OPTION) {
+                varOrListField = blocks[blockId].fields.CLONE_NAME_OPTION;
+                varType = Variable.CLONE_NAME_TYPE;
             }
             if (varOrListField) {
                 const currVarId = varOrListField.id;
