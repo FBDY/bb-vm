@@ -13,7 +13,7 @@ const sb2 = require('./serialization/sb2');
 const sb3 = require('./serialization/sb3');
 const StringUtil = require('./util/string-util');
 const formatMessage = require('format-message');
-const validate = require('scratch-parser');
+const validate = require('@bbge/parser');
 
 const Variable = require('./engine/variable');
 const newBlockIds = require('./util/new-block-ids');
