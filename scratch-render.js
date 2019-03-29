@@ -10540,6 +10540,18 @@ var Skin = function (_EventEmitter) {
     }
 
     /**
+     * Get the bounds of the drawable for determining its fenced position.
+     * @param {Array<number>} drawable - The Drawable instance this skin is using.
+     * @return {!Rectangle} The drawable's bounds.
+     */
+
+  }, {
+    key: 'getFenceBounds',
+    value: function getFenceBounds(drawable) {
+      return drawable.getFastBounds();
+    }
+
+    /**
      * Update and returns the uniforms for this skin.
      * @param {Array<number>} scale - The scaling factors to be used.
      * @returns {object.<string, *>} the shader uniforms to be used when rendering with this Skin.
@@ -12409,6 +12421,9 @@ var RenderWebGL = function (_EventEmitter) {
             throw new Error('Could not get WebGL context: this browser or environment may not support WebGL.');
         }
 
+        /** @type {RenderWebGL.UseGpuModes} */
+        _this._useGpuMode = RenderWebGL.UseGpuModes.Automatic;
+
         /** @type {Drawable[]} */
         _this._allDrawables = [];
 
@@ -12520,6 +12535,17 @@ var RenderWebGL = function (_EventEmitter) {
         key: 'setDebugCanvas',
         value: function setDebugCanvas(canvas) {
             this._debugCanvas = canvas;
+        }
+
+        /**
+         * Control the use of the GPU or CPU paths in `isTouchingColor`.
+         * @param {RenderWebGL.UseGpuModes} useGpuMode - automatically decide, force CPU, or force GPU.
+         */
+
+    }, {
+        key: 'setUseGpuMode',
+        value: function setUseGpuMode(useGpuMode) {
+            this._useGpuMode = useGpuMode;
         }
 
         /**
@@ -13080,9 +13106,16 @@ var RenderWebGL = function (_EventEmitter) {
 
             var bounds = this._candidatesBounds(candidates);
 
-            // if there are just too many pixels to CPU render efficently, we
-            // need to let readPixels happen
-            if (bounds.width * bounds.height * (candidates.length + 1) >= __cpuTouchingColorPixelCount) {
+            var maxPixelsForCPU = this._getMaxPixelsForCPU();
+
+            var debugCanvasContext = this._debugCanvas && this._debugCanvas.getContext('2d');
+            if (debugCanvasContext) {
+                this._debugCanvas.width = bounds.width;
+                this._debugCanvas.height = bounds.height;
+            }
+
+            // if there are just too many pixels to CPU render efficiently, we need to let readPixels happen
+            if (bounds.width * bounds.height * (candidates.length + 1) >= maxPixelsForCPU) {
                 this._isTouchingColorGpuStart(drawableID, candidates.map(function (_ref) {
                     var id = _ref.id;
                     return id;
@@ -13094,24 +13127,42 @@ var RenderWebGL = function (_EventEmitter) {
             var color = __touchingColor;
             var hasMask = Boolean(mask3b);
 
+            // Scratch Space - +y is top
             for (var y = bounds.bottom; y <= bounds.top; y++) {
-                if (bounds.width * (y - bounds.bottom) * (candidates.length + 1) >= __cpuTouchingColorPixelCount) {
+                if (bounds.width * (y - bounds.bottom) * (candidates.length + 1) >= maxPixelsForCPU) {
                     return this._isTouchingColorGpuFin(bounds, color3b, y - bounds.bottom);
                 }
-                // Scratch Space - +y is top
                 for (var x = bounds.left; x <= bounds.right; x++) {
                     point[1] = y;
                     point[0] = x;
-                    if (
-                    // if we use a mask, check our sample color
-                    (hasMask ? maskMatches(Drawable.sampleColor4b(point, drawable, color), mask3b) : drawable.isTouching(point)) &&
-                    // and the target color is drawn at this pixel
-                    colorMatches(RenderWebGL.sampleColor3b(point, candidates, color), color3b, 0)) {
-                        return true;
+                    // if we use a mask, check our sample color...
+                    if (hasMask ? maskMatches(Drawable.sampleColor4b(point, drawable, color), mask3b) : drawable.isTouching(point)) {
+                        RenderWebGL.sampleColor3b(point, candidates, color);
+                        if (debugCanvasContext) {
+                            debugCanvasContext.fillStyle = 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')';
+                            debugCanvasContext.fillRect(x - bounds.left, bounds.bottom - y, 1, 1);
+                        }
+                        // ...and the target color is drawn at this pixel
+                        if (colorMatches(color, color3b, 0)) {
+                            return true;
+                        }
                     }
                 }
             }
             return false;
+        }
+    }, {
+        key: '_getMaxPixelsForCPU',
+        value: function _getMaxPixelsForCPU() {
+            switch (this._useGpuMode) {
+                case RenderWebGL.UseGpuModes.ForceCPU:
+                    return Infinity;
+                case RenderWebGL.UseGpuModes.ForceGPU:
+                    return 0;
+                case RenderWebGL.UseGpuModes.Automatic:
+                default:
+                    return __cpuTouchingColorPixelCount;
+            }
         }
     }, {
         key: '_isTouchingColorGpuStart',
@@ -13712,7 +13763,7 @@ var RenderWebGL = function (_EventEmitter) {
 
             var dx = x - drawable._position[0];
             var dy = y - drawable._position[1];
-            var aabb = drawable.getFastBounds();
+            var aabb = drawable._skin.getFenceBounds(drawable);
             var inset = Math.floor(Math.min(aabb.width, aabb.height) / 2);
 
             var sx = this._xRight - Math.min(FENCE_WIDTH, inset);
@@ -14218,6 +14269,27 @@ var RenderWebGL = function (_EventEmitter) {
 
 RenderWebGL.prototype.canHazPixels = RenderWebGL.prototype.extractDrawable;
 
+/**
+ * Values for setUseGPU()
+ * @enum {string}
+ */
+RenderWebGL.UseGpuModes = {
+    /**
+     * Heuristically decide whether to use the GPU path, the CPU path, or a dynamic mixture of the two.
+     */
+    Automatic: 'Automatic',
+
+    /**
+     * Always use the GPU path.
+     */
+    ForceGPU: 'ForceGPU',
+
+    /**
+     * Always use the CPU path.
+     */
+    ForceCPU: 'ForceCPU'
+};
+
 module.exports = RenderWebGL;
 
 /***/ }),
@@ -14687,6 +14759,18 @@ var BitmapSkin = function (_Skin) {
         }
 
         /**
+         * Get the bounds of the drawable for determining its fenced position.
+         * @param {Array<number>} drawable - The Drawable instance this skin is using.
+         * @return {!Rectangle} The drawable's bounds. For compatibility with Scratch 2, we always use getAABB for bitmaps.
+         */
+
+    }, {
+        key: 'getFenceBounds',
+        value: function getFenceBounds(drawable) {
+            return drawable.getAABB();
+        }
+
+        /**
          * Set the contents of this skin to a snapshot of the provided bitmap data.
          * @param {ImageData|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} bitmapData - new contents for this skin.
          * @param {int} [costumeResolution=1] - The resolution to use for this bitmap.
@@ -14700,20 +14784,31 @@ var BitmapSkin = function (_Skin) {
         value: function setBitmap(bitmapData, costumeResolution, rotationCenter) {
             var gl = this._renderer.gl;
 
+            // Preferably bitmapData is ImageData. ImageData speeds up updating
+            // Silhouette and is better handled by more browsers in regards to
+            // memory.
+            var textureData = bitmapData;
+            if (bitmapData instanceof HTMLCanvasElement) {
+                // Given a HTMLCanvasElement get the image data to pass to webgl and
+                // Silhouette.
+                var context = bitmapData.getContext('2d');
+                textureData = context.getImageData(0, 0, bitmapData.width, bitmapData.height);
+            }
+
             if (this._texture) {
                 gl.bindTexture(gl.TEXTURE_2D, this._texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmapData);
-                this._silhouette.update(bitmapData);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureData);
+                this._silhouette.update(textureData);
             } else {
                 // TODO: mipmaps?
                 var textureOptions = {
                     auto: true,
                     wrap: gl.CLAMP_TO_EDGE,
-                    src: bitmapData
+                    src: textureData
                 };
 
                 this._texture = twgl.createTexture(gl, textureOptions);
-                this._silhouette.update(bitmapData);
+                this._silhouette.update(textureData);
             }
 
             // Do these last in case any of the above throws an exception
@@ -14803,13 +14898,13 @@ var __SilhouetteUpdateCanvas = void 0;
 var getPoint = function getPoint(_ref, x, y) {
     var width = _ref._width,
         height = _ref._height,
-        data = _ref._data;
+        data = _ref._colorData;
 
     // 0 if outside bouds, otherwise read from data.
     if (x >= width || y >= height || x < 0 || y < 0) {
         return 0;
     }
-    return data[y * width + x];
+    return data[(y * width + x) * 4 + 3];
 };
 
 /**
@@ -14862,7 +14957,6 @@ var Silhouette = function () {
          * The data representing a skin's silhouette shape.
          * @type {Uint8ClampedArray}
          */
-        this._data = null;
         this._colorData = null;
 
         this.colorAtNearest = this.colorAtLinear = function (_, dst) {
@@ -14880,28 +14974,33 @@ var Silhouette = function () {
     _createClass(Silhouette, [{
         key: 'update',
         value: function update(bitmapData) {
-            var canvas = Silhouette._updateCanvas();
-            var width = this._width = canvas.width = bitmapData.width;
-            var height = this._height = canvas.height = bitmapData.height;
-            var ctx = canvas.getContext('2d');
+            var imageData = void 0;
+            if (bitmapData instanceof ImageData) {
+                // If handed ImageData directly, use it directly.
+                imageData = bitmapData;
+                this._width = bitmapData.width;
+                this._height = bitmapData.height;
+            } else {
+                // Draw about anything else to our update canvas and poll image data
+                // from that.
+                var canvas = Silhouette._updateCanvas();
+                var width = this._width = canvas.width = bitmapData.width;
+                var height = this._height = canvas.height = bitmapData.height;
+                var ctx = canvas.getContext('2d');
 
-            if (!(width && height)) {
-                return;
+                if (!(width && height)) {
+                    return;
+                }
+                ctx.clearRect(0, 0, width, height);
+                ctx.drawImage(bitmapData, 0, 0, width, height);
+                imageData = ctx.getImageData(0, 0, width, height);
             }
-            ctx.clearRect(0, 0, width, height);
-            ctx.drawImage(bitmapData, 0, 0, width, height);
-            var imageData = ctx.getImageData(0, 0, width, height);
 
-            this._data = new Uint8ClampedArray(imageData.data.length / 4);
             this._colorData = imageData.data;
             // delete our custom overriden "uninitalized" color functions
             // let the prototype work for itself
             delete this.colorAtNearest;
             delete this.colorAtLinear;
-
-            for (var i = 0; i < imageData.data.length; i += 4) {
-                this._data[i / 4] = imageData.data[i + 3];
-            }
         }
 
         /**
@@ -14962,7 +15061,7 @@ var Silhouette = function () {
     }, {
         key: 'isTouchingNearest',
         value: function isTouchingNearest(vec) {
-            if (!this._data) return;
+            if (!this._colorData) return;
             return getPoint(this, Math.floor(vec[0] * (this._width - 1)), Math.floor(vec[1] * (this._height - 1))) > 0;
         }
 
@@ -14976,7 +15075,7 @@ var Silhouette = function () {
     }, {
         key: 'isTouchingLinear',
         value: function isTouchingLinear(vec) {
-            if (!this._data) return;
+            if (!this._colorData) return;
             var x = Math.floor(vec[0] * (this._width - 1));
             var y = Math.floor(vec[1] * (this._height - 1));
             return getPoint(this, x, y) > 0 || getPoint(this, x + 1, y) > 0 || getPoint(this, x, y + 1) > 0 || getPoint(this, x + 1, y + 1) > 0;
@@ -16538,10 +16637,14 @@ var SVGSkin = function (_Skin) {
                 this._textureScale = newScale;
                 this._svgRenderer._draw(this._textureScale, function () {
                     if (_this2._textureScale === newScale) {
+                        var canvas = _this2._svgRenderer.canvas;
+                        var context = canvas.getContext('2d');
+                        var textureData = context.getImageData(0, 0, canvas.width, canvas.height);
+
                         var gl = _this2._renderer.gl;
                         gl.bindTexture(gl.TEXTURE_2D, _this2._texture);
-                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _this2._svgRenderer.canvas);
-                        _this2._silhouette.update(_this2._svgRenderer.canvas);
+                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureData);
+                        _this2._silhouette.update(textureData);
                     }
                 });
             }
@@ -16565,20 +16668,28 @@ var SVGSkin = function (_Skin) {
             this._svgRenderer.fromString(svgData, 1, function () {
                 var gl = _this3._renderer.gl;
                 _this3._textureScale = _this3._maxTextureScale = 1;
+
+                // Pull out the ImageData from the canvas. ImageData speeds up
+                // updating Silhouette and is better handled by more browsers in
+                // regards to memory.
+                var canvas = _this3._svgRenderer.canvas;
+                var context = canvas.getContext('2d');
+                var textureData = context.getImageData(0, 0, canvas.width, canvas.height);
+
                 if (_this3._texture) {
                     gl.bindTexture(gl.TEXTURE_2D, _this3._texture);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _this3._svgRenderer.canvas);
-                    _this3._silhouette.update(_this3._svgRenderer.canvas);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureData);
+                    _this3._silhouette.update(textureData);
                 } else {
                     // TODO: mipmaps?
                     var textureOptions = {
                         auto: true,
                         wrap: gl.CLAMP_TO_EDGE,
-                        src: _this3._svgRenderer.canvas
+                        src: textureData
                     };
 
                     _this3._texture = twgl.createTexture(gl, textureOptions);
-                    _this3._silhouette.update(_this3._svgRenderer.canvas);
+                    _this3._silhouette.update(textureData);
                 }
 
                 var maxDimension = Math.max(_this3._svgRenderer.canvas.width, _this3._svgRenderer.canvas.height);
@@ -16917,31 +17028,25 @@ class SvgRenderer {
      * a natural and performant way.
      */
     _transformMeasurements () {
-        // Save `svgText` for later re-parsing.
-        const svgText = this.toString();
-
         // Append the SVG dom to the document.
         // This allows us to use `getBBox` on the page,
         // which returns the full bounding-box of all drawn SVG
         // elements, similar to how Scratch 2.0 did measurement.
         const svgSpot = document.createElement('span');
+        // Clone the svg tag. This tag becomes unusable/undrawable in browsers
+        // once it's appended to the page, perhaps for security reasons?
+        const tempTag = this._svgTag.cloneNode(/* deep */ true);
         let bbox;
         try {
+            svgSpot.appendChild(tempTag);
             document.body.appendChild(svgSpot);
-            svgSpot.appendChild(this._svgTag);
             // Take the bounding box.
-            bbox = this._svgTag.getBBox();
+            bbox = tempTag.getBBox();
         } finally {
             // Always destroy the element, even if, for example, getBBox throws.
             document.body.removeChild(svgSpot);
+            svgSpot.removeChild(tempTag);
         }
-
-        // Re-parse the SVG from `svgText`. The above DOM becomes
-        // unusable/undrawable in browsers once it's appended to the page,
-        // perhaps for security reasons?
-        const parser = new DOMParser();
-        this._svgDom = parser.parseFromString(svgText, 'text/xml');
-        this._svgTag = this._svgDom.documentElement;
 
         // Enlarge the bbox from the largest found stroke width
         // This may have false-positives, but at least the bbox will always
