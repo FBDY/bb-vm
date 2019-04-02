@@ -65,8 +65,33 @@ test('setSize', t => {
     const a = new RenderedTarget(s, r);
     const renderer = new FakeRenderer();
     a.renderer = renderer;
-    a.setSize(123);
+    a.setSize(123, 'size');
     t.equals(a._getRenderedDirectionAndScale().scale[0], 123);
+    t.equals(a._getRenderedDirectionAndScale().scale[1], 123);
+    t.end();
+});
+
+test('stretch x', t => {
+    const s = new Sprite();
+    const r = new Runtime();
+    const a = new RenderedTarget(s, r);
+    const renderer = new FakeRenderer();
+    a.renderer = renderer;
+    a.setSize(123, 'stretch x');
+    t.equals(a._getRenderedDirectionAndScale().scale[0], 123);
+    t.equals(a._getRenderedDirectionAndScale().scale[1], 100);
+    t.end();
+});
+
+test('stretch y', t => {
+    const s = new Sprite();
+    const r = new Runtime();
+    const a = new RenderedTarget(s, r);
+    const renderer = new FakeRenderer();
+    a.renderer = renderer;
+    a.setSize(123, 'stretch y');
+    t.equals(a._getRenderedDirectionAndScale().scale[0], 100);
+    t.equals(a._getRenderedDirectionAndScale().scale[1], 123);
     t.end();
 });
 

@@ -115,6 +115,18 @@ class RenderedTarget extends Target {
         this.size = 100;
 
         /**
+         * Stretch of the rendered target in the X-axis as percentage.
+         * @type {number}
+         */
+        this.scalex = 100;
+
+        /**
+         * Stretch of the rendered target in the Y-axis as percentage.
+         * @type {number}
+         */
+        this.scaley = 100;
+
+        /**
          * Currently selected costume index.
          * @type {number}
          */
@@ -309,7 +321,9 @@ class RenderedTarget extends Target {
     _getRenderedDirectionAndScale () {
         // Default: no changes to `this.direction` or `this.scale`.
         let finalDirection = this.direction;
-        let finalScale = [this.size, this.size];
+        const sizex = this.size * this.scalex / 100;
+        const sizey = this.size * this.scaley / 100;
+        let finalScale = [sizex, sizey];
         if (this.rotationStyle === RenderedTarget.ROTATION_STYLE_NONE) {
             // Force rendered direction to be 90.
             finalDirection = 90;
@@ -400,8 +414,9 @@ class RenderedTarget extends Target {
     /**
      * Set size, as a percentage of the costume size.
      * @param {!number} size Size of rendered target, as % of costume size.
+     * @param {!string} type Scaling type of rendered targed, one of 'size', 'stretch x' or 'stretch y'
      */
-    setSize (size) {
+    setSize (size, type) {
         if (this.isStage) {
             return;
         }
@@ -416,7 +431,15 @@ class RenderedTarget extends Target {
                 (1.5 * this.runtime.constructor.STAGE_WIDTH) / origW,
                 (1.5 * this.runtime.constructor.STAGE_HEIGHT) / origH
             );
-            this.size = MathUtil.clamp(size / 100, minScale, maxScale) * 100;
+
+            if (type === 'size') {
+                this.size = MathUtil.clamp(size / 100, minScale, maxScale) * 100;
+            } else if (type === 'stretch x') {
+                this.scalex = MathUtil.clamp(size / 100, minScale, maxScale) * 100;
+            } else if (type === 'stretch y') {
+                this.scaley = MathUtil.clamp(size / 100, minScale, maxScale) * 100;
+            }
+
             const renderedDirectionScale = this._getRenderedDirectionAndScale();
             this.renderer.updateDrawableProperties(this.drawableID, {
                 direction: renderedDirectionScale.direction,

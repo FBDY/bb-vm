@@ -514,12 +514,23 @@ class Scratch3LooksBlocks {
 
     changeSize (args, util) {
         const change = Cast.toNumber(args.CHANGE);
-        util.target.setSize(util.target.size + change);
+
+        let newSize = null;
+
+        if (args.TYPE === 'size') {
+            newSize = util.target.size + change;
+        } else if (args.TYPE === 'stretch x') {
+            newSize = util.target.scalex + change;
+        } else if (args.TYPE === 'stretch y') {
+            newSize = util.target.scaley + change;
+        }
+
+        util.target.setSize(newSize, args.TYPE);
     }
 
     setSize (args, util) {
         const size = Cast.toNumber(args.SIZE);
-        util.target.setSize(size);
+        util.target.setSize(size, args.TYPE);
     }
 
     goToFrontBack (args, util) {
