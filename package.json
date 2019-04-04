@@ -43,7 +43,7 @@
     "jszip": "^3.1.5",
     "minilog": "3.1.0",
     "nets": "3.2.0",
-    "@bbge/parser": "0.0.1-prerelease.20190328214728",
+    "@bbge/parser": "0.0.1-prerelease.20190328224325",
     "scratch-sb1-converter": "0.2.6",
     "scratch-translate-extension-languages": "0.0.20181205140428",
     "socket.io-client": "2.0.4",
