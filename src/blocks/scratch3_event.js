@@ -28,7 +28,8 @@ class Scratch3EventBlocks {
             event_broadcast: this.broadcast,
             event_broadcastandwait: this.broadcastAndWait,
             event_whengreaterthan: this.hatGreaterThanPredicate,
-            event_sendmsg: this.sendMsg
+            event_sendmsg: this.sendMsg,
+            event_sendmsgandwait: this.sendMsgAndWait
         };
     }
 
@@ -145,13 +146,64 @@ class Scratch3EventBlocks {
             } else {
                 msgTarget = this.runtime.getSpriteTargetByName(args.SENDMSG_TARGET);
             }
-
             // If message target is not found, return
             if (!msgTarget) return;
 
             util.startHats('event_whenbroadcastreceived', {
                 BROADCAST_OPTION: broadcastOption
             }, msgTarget);
+        }
+    }
+
+    sendMsgAndWait (args, util) {
+        const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
+            args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
+        if (broadcastVar) {
+            const broadcastOption = broadcastVar.name;
+
+            // Find message target
+            let msgTarget;
+            if (args.SENDMSG_TARGET === '_myself_') {
+                msgTarget = util.target;
+            } else {
+                msgTarget = this.runtime.getSpriteTargetByName(args.SENDMSG_TARGET);
+            }
+            // If message target is not found, return
+            if (!msgTarget) return;
+
+            // Have we run before, starting threads?
+            if (!util.stackFrame.startedThreads) {
+                // No - start hats for this message.
+                util.stackFrame.startedThreads = util.startHats(
+                    'event_whenbroadcastreceived', {
+                        BROADCAST_OPTION: broadcastOption
+                    }, msgTarget);
+                if (util.stackFrame.startedThreads.length === 0) {
+                    // Nothing was started.
+                    return;
+                }
+            }
+            // We've run before; check if the wait is still going on.
+            const instance = this;
+            // Scratch 2 considers threads to be waiting if they are still in
+            // runtime.threads. Threads that have run all their blocks, or are
+            // marked done but still in runtime.threads are still considered to
+            // be waiting.
+            const waiting = util.stackFrame.startedThreads
+                .some(thread => instance.runtime.threads.indexOf(thread) !== -1);
+            if (waiting) {
+                // If all threads are waiting for the next tick or later yield
+                // for a tick as well. Otherwise yield until the next loop of
+                // the threads.
+                if (
+                    util.stackFrame.startedThreads
+                        .every(thread => instance.runtime.isWaitingThread(thread))
+                ) {
+                    util.yieldTick();
+                } else {
+                    util.yield();
+                }
+            }
         }
     }
 }
