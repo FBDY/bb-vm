@@ -26,6 +26,14 @@ class Variable {
         case Variable.LIST_TYPE:
             this.value = [];
             break;
+        case Variable.DICT_TYPE:
+            /*
+             * TODO: Think about how to implement this. See:
+             * https://stackoverflow.com/questions/7196212/how-to-create-dictionary-and-add-key-value-pairs-dynamically
+             * I'll deal with this later once the general framework is completed.
+             */
+            this.value = [];
+            break;
         case Variable.BROADCAST_MESSAGE_TYPE:
         // fall through
         case Variable.CLONE_NAME_TYPE:
@@ -58,6 +66,14 @@ class Variable {
      */
     static get LIST_TYPE () {
         return 'list';
+    }
+
+    /**
+     * Type representation for dict variables.
+     * @const {string}
+     */
+    static get DICT_TYPE () {
+        return 'dict';
     }
 
     /**
