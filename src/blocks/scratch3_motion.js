@@ -182,59 +182,81 @@ class Scratch3MotionBlocks {
     }
 
     ifOnEdgeBounce (args, util) {
-        const bounds = util.target.getBounds();
-        if (!bounds) {
+        const requestedObject = args.ON;
+
+        let touch = false;
+
+        if (requestedObject === '_mouse_') {
+            const mouseX = util.ioQuery('mouse', 'getScratchX');
+            const mouseY = util.ioQuery('mouse', 'getScratchY');
+
+            touch = util.target.isTouchingPoint(mouseX, mouseY);
+        } else if (requestedObject === '_edge_') {
+            const bounds = util.target.getBounds();
+            if (!bounds) {
+                return;
+            }
+            // Measure distance to edges.
+            // Values are positive when the sprite is far away,
+            // and clamped to zero when the sprite is beyond.
+            const stageWidth = this.runtime.constructor.STAGE_WIDTH;
+            const stageHeight = this.runtime.constructor.STAGE_HEIGHT;
+            const distLeft = Math.max(0, (stageWidth / 2) + bounds.left);
+            const distTop = Math.max(0, (stageHeight / 2) - bounds.top);
+            const distRight = Math.max(0, (stageWidth / 2) - bounds.right);
+            const distBottom = Math.max(0, (stageHeight / 2) + bounds.bottom);
+            // Find the nearest edge.
+            let nearestEdge = '';
+            let minDist = Infinity;
+            if (distLeft < minDist) {
+                minDist = distLeft;
+                nearestEdge = 'left';
+            }
+            if (distTop < minDist) {
+                minDist = distTop;
+                nearestEdge = 'top';
+            }
+            if (distRight < minDist) {
+                minDist = distRight;
+                nearestEdge = 'right';
+            }
+            if (distBottom < minDist) {
+                minDist = distBottom;
+                nearestEdge = 'bottom';
+            }
+            if (minDist > 0) {
+                return; // Not touching any edge.
+            }
+            // Point away from the nearest edge.
+            const radians = MathUtil.degToRad(90 - util.target.direction);
+            let dx = Math.cos(radians);
+            let dy = -Math.sin(radians);
+            if (nearestEdge === 'left') {
+                dx = Math.max(0.2, Math.abs(dx));
+            } else if (nearestEdge === 'top') {
+                dy = Math.max(0.2, Math.abs(dy));
+            } else if (nearestEdge === 'right') {
+                dx = 0 - Math.max(0.2, Math.abs(dx));
+            } else if (nearestEdge === 'bottom') {
+                dy = 0 - Math.max(0.2, Math.abs(dy));
+            }
+            const newDirection = MathUtil.radToDeg(Math.atan2(dy, dx)) + 90;
+            util.target.setDirection(newDirection);
+            // Keep within the stage.
+            const fencedPosition = util.target.keepInFence(util.target.x, util.target.y);
+            util.target.setXY(fencedPosition[0], fencedPosition[1]);
             return;
+        } else {
+            touch = util.target.isTouchingSprite(requestedObject);
         }
-        // Measure distance to edges.
-        // Values are positive when the sprite is far away,
-        // and clamped to zero when the sprite is beyond.
-        const stageWidth = this.runtime.constructor.STAGE_WIDTH;
-        const stageHeight = this.runtime.constructor.STAGE_HEIGHT;
-        const distLeft = Math.max(0, (stageWidth / 2) + bounds.left);
-        const distTop = Math.max(0, (stageHeight / 2) - bounds.top);
-        const distRight = Math.max(0, (stageWidth / 2) - bounds.right);
-        const distBottom = Math.max(0, (stageHeight / 2) + bounds.bottom);
-        // Find the nearest edge.
-        let nearestEdge = '';
-        let minDist = Infinity;
-        if (distLeft < minDist) {
-            minDist = distLeft;
-            nearestEdge = 'left';
+
+        if (touch) {
+            const oldDirection = this.getDirection(null, util);
+            this.pointTowards({TOWARDS: requestedObject}, util);
+            const newDirection = this.getDirection(null, util);
+            const incidence = newDirection - oldDirection;
+            this.turnRight({DEGREES: 180 - incidence}, util);
         }
-        if (distTop < minDist) {
-            minDist = distTop;
-            nearestEdge = 'top';
-        }
-        if (distRight < minDist) {
-            minDist = distRight;
-            nearestEdge = 'right';
-        }
-        if (distBottom < minDist) {
-            minDist = distBottom;
-            nearestEdge = 'bottom';
-        }
-        if (minDist > 0) {
-            return; // Not touching any edge.
-        }
-        // Point away from the nearest edge.
-        const radians = MathUtil.degToRad(90 - util.target.direction);
-        let dx = Math.cos(radians);
-        let dy = -Math.sin(radians);
-        if (nearestEdge === 'left') {
-            dx = Math.max(0.2, Math.abs(dx));
-        } else if (nearestEdge === 'top') {
-            dy = Math.max(0.2, Math.abs(dy));
-        } else if (nearestEdge === 'right') {
-            dx = 0 - Math.max(0.2, Math.abs(dx));
-        } else if (nearestEdge === 'bottom') {
-            dy = 0 - Math.max(0.2, Math.abs(dy));
-        }
-        const newDirection = MathUtil.radToDeg(Math.atan2(dy, dx)) + 90;
-        util.target.setDirection(newDirection);
-        // Keep within the stage.
-        const fencedPosition = util.target.keepInFence(util.target.x, util.target.y);
-        util.target.setXY(fencedPosition[0], fencedPosition[1]);
     }
 
     setRotationStyle (args, util) {
