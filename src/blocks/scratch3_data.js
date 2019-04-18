@@ -31,7 +31,8 @@ class Scratch3DataBlocks {
             data_lengthoflist: this.lengthOfList,
             data_listcontainsitem: this.listContainsItem,
             data_hidelist: this.hideList,
-            data_showlist: this.showList
+            data_showlist: this.showList,
+            data_dictcontents: this.getDictContents
         };
     }
 
@@ -251,6 +252,34 @@ class Scratch3DataBlocks {
      */
     static get LIST_ITEM_LIMIT () {
         return 200000;
+    }
+
+    /*
+     * TODO: In the GUI, dictionary contents does not have a pretty title;
+     * it shows data_dictcontents (the opcode). Fix it.
+     * TODO: Find out how the GUI displays lists the way it does and if possible
+     * make it display the dictionaries in a similar manner.
+     */
+    getDictContents (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+
+        // TODO: Format the dictionary so that the React monitor displays it in a pretty format.
+        if (util.thread.updateMonitor) {
+            // Return original string representation if up-to-date, which doesn't trigger monitor update.
+            if (dict._monitorUpToDate) return dict.stringRepr;
+            // If value changed, reset the flag, update the stored string and return a copy to trigger monitor update.
+            // Because monitors use Immutable data structures, only new objects trigger updates.
+            dict._monitorUpToDate = true;
+            dict.stringRepr = dict.value.toString();
+            return dict.stringRepr;
+        }
+
+        let result = '';
+        for (const key in dict.value) {
+            result = `${result}${key}:${dict.value[key]} `;
+        }
+        return result;
     }
 }
 

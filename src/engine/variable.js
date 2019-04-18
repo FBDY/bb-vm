@@ -27,12 +27,7 @@ class Variable {
             this.value = [];
             break;
         case Variable.DICT_TYPE:
-            /*
-             * TODO: Think about how to implement this. See:
-             * https://stackoverflow.com/questions/7196212/how-to-create-dictionary-and-add-key-value-pairs-dynamically
-             * I'll deal with this later once the general framework is completed.
-             */
-            this.value = [];
+            this.value = {};
             break;
         case Variable.BROADCAST_MESSAGE_TYPE:
         // fall through

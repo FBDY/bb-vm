@@ -255,6 +255,26 @@ class Target extends EventEmitter {
     }
 
     /**
+    * Look up a dictionary object for this target, and create it if one doesn't exist.
+    * Search begins for local dictionaries; then look for globals.
+    * @param {!string} id Id of the dictionary.
+    * @param {!string} name Name of the dictionary.
+    * @return {!Varible} Variable object representing the found/created dictionary.
+     */
+    lookupOrCreateDict (id, name) {
+        let dict = this.lookupVariableById(id);
+        if (dict) return dict;
+
+        dict = this.lookupVariableByNameAndType(name, Variable.DICT_TYPE);
+        if (dict) return dict;
+
+        // No variable with this name exists - create it locally.
+        const newDict = new Variable(id, name, Variable.DICT_TYPE, false);
+        this.variables[id] = newDict;
+        return newDict;
+    }
+
+    /**
      * Creates a variable with the given id and name and adds it to the
      * dictionary of variables.
      * @param {string} id Id of variable
