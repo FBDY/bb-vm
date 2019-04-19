@@ -268,13 +268,13 @@ class Scratch3DataBlocks {
 
         // TODO: Format the dictionary so that the React monitor displays it in a pretty format.
         if (util.thread.updateMonitor) {
-            // Return original string representation if up-to-date, which doesn't trigger monitor update.
-            if (dict._monitorUpToDate) return dict.stringRepr;
-            // If value changed, reset the flag, update the stored string and return a copy to trigger monitor update.
+            // Return original array representation if up-to-date, which doesn't trigger monitor update.
+            if (dict._monitorUpToDate) return dict.arrayRepr;
+            // If value changed, reset the flag, update the stored array and return a copy to trigger monitor update.
             // Because monitors use Immutable data structures, only new objects trigger updates.
             dict._monitorUpToDate = true;
-            dict.stringRepr = dict.value.toString();
-            return dict.stringRepr;
+            dict.arrayRepr = Object.keys(dict.value);
+            return dict.arrayRepr;
         }
 
         let result = '';
