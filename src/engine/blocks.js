@@ -658,6 +658,12 @@ class Blocks {
             } else if (!wasMonitored && block.isMonitored) {
                 // Tries to show the monitor for specified block. If it doesn't exist, add the monitor.
                 if (!this.runtime.requestShowMonitor(block.id)) {
+                    let monitorMode = 'default';
+                    if (block.opcode === 'data_listcontents') {
+                        monitorMode = 'list';
+                    } else if (block.opcode === 'data_dictcontents') {
+                        monitorMode = 'dict';
+                    }
                     this.runtime.requestAddMonitor(MonitorRecord({
                         id: block.id,
                         targetId: block.targetId,
@@ -666,7 +672,7 @@ class Blocks {
                         params: this._getBlockParams(block),
                         // @todo(vm#565) for numerical values with decimals, some countries use comma
                         value: '',
-                        mode: block.opcode === 'data_listcontents' ? 'list' : 'default'
+                        mode: monitorMode
                     }));
                 }
             }
