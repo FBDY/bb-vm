@@ -34,7 +34,9 @@ class Scratch3DataBlocks {
             data_showlist: this.showList,
             data_dictcontents: this.getDictContents,
             data_addtodict: this.addToDict,
-            data_itemofdict: this.getItemOfDict
+            data_itemofdict: this.getItemOfDict,
+            data_hidedict: this.hideDict,
+            data_showdict: this.showDict
         };
     }
 
@@ -302,6 +304,14 @@ class Scratch3DataBlocks {
             return '';
         }
         return item;
+    }
+
+    showDict (args) {
+        this.changeMonitorVisibility(args.DICT.id, true);
+    }
+
+    hideDict (args) {
+        this.changeMonitorVisibility(args.DICT.id, false);
     }
 
     /**
