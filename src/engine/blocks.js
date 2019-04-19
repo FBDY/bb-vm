@@ -818,7 +818,7 @@ class Blocks {
     }
 
     /**
-     * Returns a map of all references to variables or lists from blocks
+     * Returns a map of all references to variables, lists and dictionaries from blocks
      * in this block container.
      * @param {Array<object>} optBlocks Optional list of blocks to constrain the search to.
      * This is useful for getting variable/list references for a stack of blocks instead
@@ -840,6 +840,9 @@ class Blocks {
             } else if (blocks[blockId].fields.LIST) {
                 varOrListField = blocks[blockId].fields.LIST;
                 varType = Variable.LIST_TYPE;
+            } else if (blocks[blockId].fields.DICT) {
+                varOrListField = blocks[blockId].fields.DICT;
+                varType = Variable.DICT_TYPE;
             } else if (optIncludeBroadcast && blocks[blockId].fields.BROADCAST_OPTION) {
                 varOrListField = blocks[blockId].fields.BROADCAST_OPTION;
                 varType = Variable.BROADCAST_MESSAGE_TYPE;
