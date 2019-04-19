@@ -32,7 +32,9 @@ class Scratch3DataBlocks {
             data_listcontainsitem: this.listContainsItem,
             data_hidelist: this.hideList,
             data_showlist: this.showList,
-            data_dictcontents: this.getDictContents
+            data_dictcontents: this.getDictContents,
+            data_addtodict: this.addToDict,
+            data_itemofdict: this.getItemOfDict
         };
     }
 
@@ -280,6 +282,34 @@ class Scratch3DataBlocks {
             result = `${result}${key}:${dict.value[key]} `;
         }
         return result;
+    }
+
+    addToDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        if (Object.keys(dict.value).length < Scratch3DataBlocks.DICT_ITEM_LIMIT) {
+            dict.value[args.KEY] = args.ITEM;
+            dict._monitorUpToDate = false;
+        }
+    }
+
+    getItemOfDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        const item = dict.value[args.KEY];
+        if (!item) {
+            // Match list behaviour by returning empty string for nonexistent item
+            return '';
+        }
+        return item;
+    }
+
+    /**
+     * Maximum number of elements in a dictionary.
+     * @returns {int} the maximum number of elements in a dictionary.
+     */
+    static get DICT_ITEM_LIMIT () {
+        return 200000;
     }
 }
 
