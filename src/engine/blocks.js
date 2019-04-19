@@ -570,7 +570,7 @@ class Blocks {
 
             // Update block value
             if (!block.fields[args.name]) return;
-            if (args.name === 'VARIABLE' || args.name === 'LIST' ||
+            if (args.name === 'VARIABLE' || args.name === 'LIST' || args.name === 'DICT' ||
                 args.name === 'BROADCAST_OPTION' || args.name === 'CLONE_NAME_OPTION') {
                 // Get variable name using the id in args.value.
                 const variable = this.runtime.getEditingTarget().lookupVariableById(args.value);
@@ -611,7 +611,8 @@ class Blocks {
             // block but in the case of monitored reporters that have arguments,
             // map the old id to a new id, creating a new monitor block if necessary
             if (block.fields && Object.keys(block.fields).length > 0 &&
-                block.opcode !== 'data_variable' && block.opcode !== 'data_listcontents') {
+                block.opcode !== 'data_variable' && block.opcode !== 'data_listcontents' &&
+                block.opcode !== 'data_dictcontents') {
 
                 // This block has an argument which needs to get separated out into
                 // multiple monitor blocks with ids based on the selected argument
@@ -639,6 +640,8 @@ class Blocks {
                 isSpriteLocalVariable = !(this.runtime.getTargetForStage().variables[block.fields.VARIABLE.id]);
             } else if (block.opcode === 'data_listcontents') {
                 isSpriteLocalVariable = !(this.runtime.getTargetForStage().variables[block.fields.LIST.id]);
+            } else if (block.opcode === 'data_dictcontents') {
+                isSpriteLocalVariable = !(this.runtime.getTargetForStage().variables[block.fields.DICT.id]);
             }
 
             const isSpriteSpecific = isSpriteLocalVariable ||
@@ -887,6 +890,8 @@ class Blocks {
                 varOrListField = blocks[blockId].fields.VARIABLE;
             } else if (blocks[blockId].fields.LIST) {
                 varOrListField = blocks[blockId].fields.LIST;
+            } else if (blocks[blockId].fields.DICT) {
+                varOrListField = blocks[blockId].fields.DICT;
             }
             if (varOrListField) {
                 const currFieldId = varOrListField.id;
