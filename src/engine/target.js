@@ -423,6 +423,8 @@ class Target extends EventEmitter {
             );
             if (newVariable.type === Variable.LIST_TYPE) {
                 newVariable.value = originalVariable.value.slice(0);
+            } else if (newVariable.type === Variable.DICT_TYPE) {
+                newVariable.value = JSON.parse(JSON.stringify(originalVariable.value));
             } else {
                 newVariable.value = originalVariable.value;
             }
