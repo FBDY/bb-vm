@@ -34,6 +34,7 @@ class Scratch3DataBlocks {
             data_showlist: this.showList,
             data_dictcontents: this.getDictContents,
             data_addtodict: this.addToDict,
+            data_deleteofdict: this.deleteOfDict,
             data_itemofdict: this.getItemOfDict,
             data_hidedict: this.hideDict,
             data_showdict: this.showDict
@@ -288,6 +289,13 @@ class Scratch3DataBlocks {
             dict.value[args.KEY] = args.ITEM;
             dict._monitorUpToDate = false;
         }
+    }
+
+    deleteOfDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        delete dict.value[args.KEY];
+        dict._monitorUpToDate = false;
     }
 
     getItemOfDict (args, util) {
