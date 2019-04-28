@@ -37,6 +37,7 @@ class Scratch3DataBlocks {
             data_deleteofdict: this.deleteOfDict,
             data_deleteallofdict: this.deleteAllOfDict,
             data_itemofdict: this.getItemOfDict,
+            data_lengthofdict: this.lengthOfDict,
             data_hidedict: this.hideDict,
             data_showdict: this.showDict
         };
@@ -314,6 +315,12 @@ class Scratch3DataBlocks {
             return '';
         }
         return item;
+    }
+
+    lengthOfDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        return Object.keys(dict.value).length;
     }
 
     showDict (args) {
