@@ -39,6 +39,7 @@ class Scratch3DataBlocks {
             data_itemofdict: this.getItemOfDict,
             data_lengthofdict: this.lengthOfDict,
             data_dictcontainskey: this.dictContainsKey,
+            data_for_each_key_in_dict: this.forEachKeyInDict,
             data_hidedict: this.hideDict,
             data_showdict: this.showDict
         };
@@ -280,7 +281,7 @@ class Scratch3DataBlocks {
 
         let result = '';
         for (const key in dict.value) {
-            result = `${result}${key}:${dict.value[key]} `;
+            result = `${result}${key}➡${dict.value[key]}\n`;
         }
         return result;
     }
@@ -328,6 +329,23 @@ class Scratch3DataBlocks {
         const dict = util.target.lookupOrCreateDict(
             args.DICT.id, args.DICT.name);
         return args.KEY in dict.value;
+    }
+
+    forEachKeyInDict (args, util) {
+        const variable = util.target.lookupOrCreateVariable(
+            args.VARIABLE.id, args.VARIABLE.name);
+        const entries = args.DICT.split('\n');
+
+        if (typeof util.stackFrame.index === 'undefined') {
+            util.stackFrame.index = 0;
+        }
+
+        if (util.stackFrame.index < entries.length) {
+            const key = entries[util.stackFrame.index].split('➡')[0];
+            variable.value = key;
+            util.stackFrame.index++;
+            util.startBranch(1, true);
+        }
     }
 
     showDict (args) {
