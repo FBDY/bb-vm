@@ -81,6 +81,8 @@ const VAR_PRIMITIVE = 12;
 const LIST_PRIMITIVE = 13;
 // control_clone_name_menu
 const CLONE_NAME_PRIMITIVE = 14;
+// data_dictcontents
+const DICT_PRIMITIVE = 15;
 
 // Map block opcodes to the above primitives and the name of the field we can use
 // to find the value of the field
@@ -95,7 +97,8 @@ const primitiveOpcodeInfoMap = {
     event_broadcast_menu: [BROADCAST_PRIMITIVE, 'BROADCAST_OPTION'],
     data_variable: [VAR_PRIMITIVE, 'VARIABLE'],
     data_listcontents: [LIST_PRIMITIVE, 'LIST'],
-    control_clone_name_menu: [CLONE_NAME_PRIMITIVE, 'CLONE_NAME_OPTION']
+    control_clone_name_menu: [CLONE_NAME_PRIMITIVE, 'CLONE_NAME_OPTION'],
+    data_dictcontents: [DICT_PRIMITIVE, 'DICT']
 };
 
 /**
@@ -115,7 +118,8 @@ const serializePrimitiveBlock = function (block) {
         const primitiveDesc = [primitiveConstant, field.value];
         if (block.opcode === 'event_broadcast_menu' || block.opcode === 'control_clone_name_menu') {
             primitiveDesc.push(field.id);
-        } else if (block.opcode === 'data_variable' || block.opcode === 'data_listcontents') {
+        } else if (block.opcode === 'data_variable' || block.opcode === 'data_listcontents' ||
+            block.opcode === 'data_dictcontents') {
             primitiveDesc.push(field.id);
             if (block.topLevel) {
                 primitiveDesc.push(block.x ? Math.round(block.x) : 0);
@@ -328,7 +332,7 @@ const serializeBlocks = function (blocks) {
         // a shadow block, and there are no blocks that reference it, otherwise
         // they would have been compressed in the last pass)
         if (Array.isArray(serializedBlock) &&
-            [VAR_PRIMITIVE, LIST_PRIMITIVE].indexOf(serializedBlock[0]) < 0) {
+            [VAR_PRIMITIVE, LIST_PRIMITIVE, DICT_PRIMITIVE].indexOf(serializedBlock[0]) < 0) {
             log.warn(`Found an unexpected top level primitive with block ID: ${
                 blockID}; deleting it from serialized blocks.`);
             delete obj[blockID];
@@ -394,6 +398,7 @@ const serializeVariables = function (variables) {
     // keep track of a type for each
     obj.variables = Object.create(null);
     obj.lists = Object.create(null);
+    obj.dicts = Object.create(null);
     obj.broadcasts = Object.create(null);
     obj.clones = Object.create(null);
     for (const varId in variables) {
@@ -404,6 +409,10 @@ const serializeVariables = function (variables) {
         }
         if (v.type === Variable.LIST_TYPE) {
             obj.lists[varId] = [v.name, v.value];
+            continue;
+        }
+        if (v.type === Variable.DICT_TYPE) {
+            obj.dicts[varId] = [v.name, v.value];
             continue;
         }
         if (v.type === Variable.CLONE_NAME_TYPE) {
@@ -453,6 +462,7 @@ const serializeTarget = function (target, extensions) {
     const vars = serializeVariables(target.variables);
     obj.variables = vars.variables;
     obj.lists = vars.lists;
+    obj.dicts = vars.dicts;
     obj.broadcasts = vars.broadcasts;
     obj.clones = vars.clones;
     [obj.blocks, targetExtensions] = serializeBlocks(target.blocks);
@@ -511,7 +521,7 @@ const serializeMonitors = function (monitors) {
             y: monitorData.y,
             visible: monitorData.visible
         };
-        if (monitorData.mode !== 'list') {
+        if (monitorData.mode !== 'list' && monitorData.mode !== 'dict') {
             serializedMonitor.sliderMin = monitorData.sliderMin;
             serializedMonitor.sliderMax = monitorData.sliderMax;
             serializedMonitor.isDiscrete = monitorData.isDiscrete;
@@ -720,6 +730,23 @@ const deserializeInputDesc = function (inputDescOrId, parentId, isShadow, blocks
         }
         break;
     }
+    case DICT_PRIMITIVE: {
+        primitiveObj.opcode = 'data_dictcontents';
+        primitiveObj.fields = {
+            DICT: {
+                name: 'DICT',
+                value: inputDescOrId[1],
+                id: inputDescOrId[2],
+                variableType: Variable.DICT_TYPE
+            }
+        };
+        if (inputDescOrId.length > 3) {
+            primitiveObj.topLevel = true;
+            primitiveObj.x = inputDescOrId[3];
+            primitiveObj.y = inputDescOrId[4];
+        }
+        break;
+    }
     case CLONE_NAME_PRIMITIVE: {
         primitiveObj.opcode = 'control_clone_name_menu';
         primitiveObj.fields = {
@@ -807,6 +834,8 @@ const deserializeFields = function (fields) {
             obj[fieldName].variableType = Variable.SCALAR_TYPE;
         } else if (fieldName === 'LIST') {
             obj[fieldName].variableType = Variable.LIST_TYPE;
+        } else if (fieldName === 'DICT') {
+            obj[fieldName].variableType = Variable.DICT_TYPE;
         } else if (fieldName === 'CLONE_NAME_OPTION') {
             obj[fieldName].variableType = Variable.CLONE_NAME_TYPE;
         }
@@ -992,6 +1021,19 @@ const parseScratchObject = function (object, runtime, extensions, zip) {
             target.variables[newList.id] = newList;
         }
     }
+    if (object.hasOwnProperty('dicts')) {
+        for (const dictId in object.dicts) {
+            const dict = object.dicts[dictId];
+            const newDict = new Variable(
+                dictId,
+                dict[0],
+                Variable.DICT_TYPE,
+                false
+            );
+            newDict.value = dict[1];
+            target.variables[newDict.id] = newDict;
+        }
+    }
     if (object.hasOwnProperty('broadcasts')) {
         for (const broadcastId in object.broadcasts) {
             const broadcast = object.broadcasts[broadcastId];
@@ -1112,7 +1154,7 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
     // monitors should already have the correct monitor ID serialized in the monitorData,
     // find the correct id for all other monitors.
     if (monitorData.opcode !== 'data_variable' && monitorData.opcode !== 'data_listcontents' &&
-        monitorBlockInfo && monitorBlockInfo.isSpriteSpecific) {
+        monitorData.opcode !== 'data_dictcontents' && monitorBlockInfo && monitorBlockInfo.isSpriteSpecific) {
         monitorData.id = monitorBlockInfo.getId(
             monitorData.targetId, fields);
     } else {
@@ -1149,7 +1191,7 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
             targetId: monitorData.targetId
         };
 
-        // Variables and lists have additional properties
+        // Variables, lists and dicts have additional properties
         // stored in their fields, update this info in the
         // monitor block fields
         if (monitorData.opcode === 'data_variable') {
@@ -1160,6 +1202,10 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
             const field = monitorBlock.fields.LIST;
             field.id = monitorData.id;
             field.variableType = Variable.LIST_TYPE;
+        } else if (monitorData.opcode === 'data_dictcontents') {
+            const field = monitorBlock.fields.DICT;
+            field.id = monitorData.id;
+            field.variableType = Variable.DICT_TYPE;
         }
 
         runtime.monitorBlocks.createBlock(monitorBlock);
