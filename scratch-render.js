@@ -17263,6 +17263,9 @@ module.exports = function (svgString) {
     // Note: [\s\S] matches everything including newlines, which .* does not
     svgString = svgString.replace(/<metadata>[\s\S]*<\/metadata>/, '');
 
+    // Strip script tags and javascript executing
+    svgString = svgString.replace(/<script[\s\S]*>[\s\S]*<\/script>/, '');
+
     return svgString;
 };
 
