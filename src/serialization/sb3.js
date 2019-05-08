@@ -417,6 +417,7 @@ const serializeVariables = function (variables) {
         }
         if (v.type === Variable.CLONE_NAME_TYPE) {
             obj.clones[varId] = v.value; // name and value is the same for clone names
+            continue;
         }
 
         // otherwise should be a scalar type
