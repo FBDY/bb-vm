@@ -1537,7 +1537,8 @@ class VirtualMachine extends EventEmitter {
         if (target) {
             const variable = target.lookupVariableById(variableId);
             if (variable) {
-                return variable.value;
+                // Return a new copy for mutating, ensuring that updates stay immutable.
+                return JSON.parse(JSON.stringify(variable.value));
             }
         }
         return null;
