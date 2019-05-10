@@ -306,6 +306,7 @@ class Scratch3DataBlocks {
         const dict = util.target.lookupOrCreateDict(
             args.DICT.id, args.DICT.name);
         dict.value = {};
+        dict._monitorUpToDate = false;
     }
 
     getItemOfDict (args, util) {
