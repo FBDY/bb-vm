@@ -275,7 +275,7 @@ class Scratch3DataBlocks {
             dict._monitorUpToDate = true;
             // TODO: Make this prettier together with the help of bb-gui
             dict.arrayRepr = Object.keys(dict.value);
-            dict.arrayRepr = dict.arrayRepr.map(key => `${key}:${dict.value[key]}`);
+            dict.arrayRepr = dict.arrayRepr.map(key => `${key}➡${dict.value[key]}`);
             return dict.arrayRepr;
         }
 
