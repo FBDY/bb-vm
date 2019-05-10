@@ -273,7 +273,6 @@ class Scratch3DataBlocks {
             // If value changed, reset the flag, update the stored array and return a copy to trigger monitor update.
             // Because monitors use Immutable data structures, only new objects trigger updates.
             dict._monitorUpToDate = true;
-            // TODO: Make this prettier together with the help of bb-gui
             dict.arrayRepr = Object.keys(dict.value)
                 .map(key => `${key}➡${dict.value[key]}`);
             return dict.arrayRepr;
