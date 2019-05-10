@@ -1504,7 +1504,9 @@ class VirtualMachine extends EventEmitter {
      * @returns {boolean} whether the target and variable were found and updated.
      */
     setVariableValue (targetId, variableId, value) {
-        const target = this.runtime.getTargetById(targetId);
+        const target = targetId ?
+            this.runtime.getTargetById(targetId) :
+            this.runtime.getTargetForStage();
         if (target) {
             const variable = target.lookupVariableById(variableId);
             if (variable) {
@@ -1527,7 +1529,9 @@ class VirtualMachine extends EventEmitter {
      * @returns {?*} The value of the variable, or null if it could not be looked up.
      */
     getVariableValue (targetId, variableId) {
-        const target = this.runtime.getTargetById(targetId);
+        const target = targetId ?
+            this.runtime.getTargetById(targetId) :
+            this.runtime.getTargetForStage();
         if (target) {
             const variable = target.lookupVariableById(variableId);
             if (variable) {
