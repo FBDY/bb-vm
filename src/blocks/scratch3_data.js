@@ -274,16 +274,14 @@ class Scratch3DataBlocks {
             // Because monitors use Immutable data structures, only new objects trigger updates.
             dict._monitorUpToDate = true;
             // TODO: Make this prettier together with the help of bb-gui
-            dict.arrayRepr = Object.keys(dict.value);
-            dict.arrayRepr = dict.arrayRepr.map(key => `${key}➡${dict.value[key]}`);
+            dict.arrayRepr = Object.keys(dict.value)
+                .map(key => `${key}➡${dict.value[key]}`);
             return dict.arrayRepr;
         }
 
-        let result = '';
-        for (const key in dict.value) {
-            result = `${result}${key}➡${dict.value[key]}\n`;
-        }
-        return result;
+        return Object.keys(dict.value)
+            .map(key => `${key}➡${dict.value[key]}`)
+            .join('\n');
     }
 
     addToDict (args, util) {
