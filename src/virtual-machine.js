@@ -1499,6 +1499,7 @@ class VirtualMachine extends EventEmitter {
     /**
      * Set a target's variable's value. Return whether it succeeded.
      * @param {!string} targetId ID of the target which owns the variable.
+     * If null, target is stage.
      * @param {!string} variableId ID of the variable to set.
      * @param {!*} value The new value of that variable.
      * @returns {boolean} whether the target and variable were found and updated.
@@ -1525,6 +1526,7 @@ class VirtualMachine extends EventEmitter {
     /**
      * Get a target's variable's value. Return null if the target or variable does not exist.
      * @param {!string} targetId ID of the target which owns the variable.
+     * If null, target is stage.
      * @param {!string} variableId ID of the variable to set.
      * @returns {?*} The value of the variable, or null if it could not be looked up.
      */
