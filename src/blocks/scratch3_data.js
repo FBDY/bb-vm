@@ -31,7 +31,17 @@ class Scratch3DataBlocks {
             data_lengthoflist: this.lengthOfList,
             data_listcontainsitem: this.listContainsItem,
             data_hidelist: this.hideList,
-            data_showlist: this.showList
+            data_showlist: this.showList,
+            data_dictcontents: this.getDictContents,
+            data_addtodict: this.addToDict,
+            data_deleteofdict: this.deleteOfDict,
+            data_deleteallofdict: this.deleteAllOfDict,
+            data_itemofdict: this.getItemOfDict,
+            data_lengthofdict: this.lengthOfDict,
+            data_dictcontainskey: this.dictContainsKey,
+            data_for_each_key_in_dict: this.forEachKeyInDict,
+            data_hidedict: this.hideDict,
+            data_showdict: this.showDict
         };
     }
 
@@ -250,6 +260,105 @@ class Scratch3DataBlocks {
      * @const {string}
      */
     static get LIST_ITEM_LIMIT () {
+        return 200000;
+    }
+
+    getDictContents (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+
+        if (util.thread.updateMonitor) {
+            // Return original array representation if up-to-date, which doesn't trigger monitor update.
+            if (dict._monitorUpToDate) return dict.arrayRepr;
+            // If value changed, reset the flag, update the stored array and return a copy to trigger monitor update.
+            // Because monitors use Immutable data structures, only new objects trigger updates.
+            dict._monitorUpToDate = true;
+            dict.arrayRepr = Object.keys(dict.value)
+                .map(key => `${key}➡${dict.value[key]}`);
+            return dict.arrayRepr;
+        }
+
+        return Object.keys(dict.value)
+            .map(key => `${key}➡${dict.value[key]}`)
+            .join('\n');
+    }
+
+    addToDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        if (Object.keys(dict.value).length < Scratch3DataBlocks.DICT_ITEM_LIMIT) {
+            dict.value[args.KEY] = args.ITEM;
+            dict._monitorUpToDate = false;
+        }
+    }
+
+    deleteOfDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        delete dict.value[args.KEY];
+        dict._monitorUpToDate = false;
+    }
+
+    deleteAllOfDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        dict.value = {};
+        dict._monitorUpToDate = false;
+    }
+
+    getItemOfDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        const item = dict.value[args.KEY];
+        if (!item) {
+            // Match list behaviour by returning empty string for nonexistent item
+            return '';
+        }
+        return item;
+    }
+
+    lengthOfDict (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        return Object.keys(dict.value).length;
+    }
+
+    dictContainsKey (args, util) {
+        const dict = util.target.lookupOrCreateDict(
+            args.DICT.id, args.DICT.name);
+        return args.KEY in dict.value;
+    }
+
+    forEachKeyInDict (args, util) {
+        const variable = util.target.lookupOrCreateVariable(
+            args.VARIABLE.id, args.VARIABLE.name);
+        const entries = args.DICT.split('\n');
+
+        if (typeof util.stackFrame.index === 'undefined') {
+            util.stackFrame.index = 0;
+        }
+
+        if (util.stackFrame.index < entries.length) {
+            const key = entries[util.stackFrame.index].split('➡')[0];
+            variable.value = key;
+            util.stackFrame.index++;
+            util.startBranch(1, true);
+        }
+    }
+
+    showDict (args) {
+        this.changeMonitorVisibility(args.DICT.id, true);
+    }
+
+    hideDict (args) {
+        this.changeMonitorVisibility(args.DICT.id, false);
+    }
+
+    /**
+     * Maximum number of elements in a dictionary.
+     * @returns {int} the maximum number of elements in a dictionary.
+     */
+    static get DICT_ITEM_LIMIT () {
         return 200000;
     }
 }

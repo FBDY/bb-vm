@@ -26,6 +26,9 @@ class Variable {
         case Variable.LIST_TYPE:
             this.value = [];
             break;
+        case Variable.DICT_TYPE:
+            this.value = {};
+            break;
         case Variable.BROADCAST_MESSAGE_TYPE:
         // fall through
         case Variable.CLONE_NAME_TYPE:
@@ -58,6 +61,14 @@ class Variable {
      */
     static get LIST_TYPE () {
         return 'list';
+    }
+
+    /**
+     * Type representation for dict variables.
+     * @const {string}
+     */
+    static get DICT_TYPE () {
+        return 'dict';
     }
 
     /**

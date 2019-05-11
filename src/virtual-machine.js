@@ -1512,6 +1512,12 @@ class VirtualMachine extends EventEmitter {
             const variable = target.lookupVariableById(variableId);
             if (variable) {
                 variable.value = value;
+                // XXX: Temporary hack
+                // Force a monitor update when a dict is modified from a DictMonitor.
+                // This is not a clean solution.
+                if (variable._monitorUpToDate) {
+                    variable._monitorUpToDate = false;
+                }
 
                 if (variable.isCloud) {
                     this.runtime.ioDevices.cloud.requestUpdateVariable(variable.name, variable.value);
