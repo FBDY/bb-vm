@@ -1549,6 +1549,26 @@ class VirtualMachine extends EventEmitter {
         }
         return null;
     }
+
+    /**
+     * Get a target's variable. Return null if the target or variable does not exist.
+     * @param {!string} targetId ID of the target which owns the variable.
+     * If null, target is stage.
+     * @param {!string} variableId ID of the variable to set.
+     * @returns {?*} The variable, or null if it could not be looked up.
+     */
+    getVariable (targetId, variableId) {
+        const target = targetId ?
+            this.runtime.getTargetById(targetId) :
+            this.runtime.getTargetForStage();
+        if (target) {
+            const variable = target.lookupVariableById(variableId);
+            if (variable) {
+                return variable;
+            }
+        }
+        return null;
+    }
 }
 
 module.exports = VirtualMachine;
